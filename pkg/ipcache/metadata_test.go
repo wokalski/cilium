@@ -32,7 +32,7 @@ func TestInjectLabels(t *testing.T) {
 
 	// Insert kube-apiserver IP from outside of the cluster. This should create
 	// a CIDR ID for this IP.
-	IPIdentityCache.UpsertMetadata("10.0.0.4", labels.LabelKubeAPIServer, source.KubeAPIServer, "kube-uid")
+	IPIdentityCache.metadata.upsert("10.0.0.4", source.KubeAPIServer, "kube-uid", labels.LabelKubeAPIServer)
 	assert.Len(t, IPIdentityCache.metadata.m, 2)
 	remaining, err = IPIdentityCache.InjectLabels(ctx, []string{"10.0.0.4"})
 	assert.NoError(t, err)
@@ -43,7 +43,7 @@ func TestInjectLabels(t *testing.T) {
 	// Upsert node labels to the kube-apiserver to validate that the CIDR ID is
 	// deallocated and the kube-apiserver reserved ID is associated with this
 	// IP now.
-	IPIdentityCache.UpsertMetadata("10.0.0.4", labels.LabelRemoteNode, source.CustomResource, "node-uid")
+	IPIdentityCache.metadata.upsert("10.0.0.4", source.CustomResource, "node-uid", labels.LabelRemoteNode)
 	assert.Len(t, IPIdentityCache.metadata.m, 2)
 	remaining, err = IPIdentityCache.InjectLabels(ctx, []string{"10.0.0.4"})
 	assert.NoError(t, err)
@@ -55,8 +55,8 @@ func TestInjectLabels(t *testing.T) {
 func TestFilterMetadataByLabels(t *testing.T) {
 	setupTest(t)
 
-	IPIdentityCache.UpsertMetadata("2.1.1.1", labels.LabelWorld, source.Generated, "gen-uid")
-	IPIdentityCache.UpsertMetadata("3.1.1.1", labels.LabelWorld, source.Generated, "gen-uid-2")
+	IPIdentityCache.metadata.upsert("2.1.1.1", source.Generated, "gen-uid", labels.LabelWorld)
+	IPIdentityCache.metadata.upsert("3.1.1.1", source.Generated, "gen-uid-2", labels.LabelWorld)
 
 	assert.Len(t, IPIdentityCache.metadata.filterByLabels(labels.LabelKubeAPIServer), 1)
 	assert.Len(t, IPIdentityCache.metadata.filterByLabels(labels.LabelWorld), 2)
@@ -86,7 +86,7 @@ func TestRemoveLabelsFromIPs(t *testing.T) {
 	// Entry with only kube-apiserver labels means kube-apiserver is outside of
 	// the cluster, and thus will have a CIDR identity when InjectLabels() is
 	// called.
-	IPIdentityCache.UpsertMetadata("1.1.1.1", labels.LabelKubeAPIServer, source.CustomResource, "kube-uid")
+	IPIdentityCache.metadata.upsert("1.1.1.1", source.CustomResource, "kube-uid", labels.LabelKubeAPIServer)
 	remaining, err = IPIdentityCache.InjectLabels(ctx, []string{"1.1.1.1"})
 	assert.NoError(t, err)
 	assert.Len(t, remaining, 0)
@@ -122,8 +122,8 @@ func setupTest(t *testing.T) {
 	})
 	IPIdentityCache.k8sSyncedChecker = &mockK8sSyncedChecker{}
 
-	IPIdentityCache.UpsertMetadata("1.1.1.1", labels.LabelKubeAPIServer, source.CustomResource, "kube-uid")
-	IPIdentityCache.UpsertMetadata("1.1.1.1", labels.LabelHost, source.Local, "host-uid")
+	IPIdentityCache.metadata.upsert("1.1.1.1", source.CustomResource, "kube-uid", labels.LabelKubeAPIServer)
+	IPIdentityCache.metadata.upsert("1.1.1.1", source.Local, "host-uid", labels.LabelHost)
 }
 
 type mockK8sSyncedChecker struct{}
