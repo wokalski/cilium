@@ -177,12 +177,11 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_PR_SP_CREDS }}
 
-      - name: Display Azure CLI info
-        uses: azure/CLI@7378ce2ca3c38b4b063feb7a4cbe384fef978055
-        with:
-          azcliversion: 2.0.72
-          inlineScript: |
-            az account show
+      - name: Install aks-preview CLI extension
+        run: |
+            az extension add --name aks-preview
+            az extension update --name aks-preview
+            az version
 
       - name: Create AKS cluster
         run: |
