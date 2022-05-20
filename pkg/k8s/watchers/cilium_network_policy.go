@@ -13,6 +13,7 @@ import (
 	"k8s.io/client-go/tools/cache"
 
 	"github.com/cilium/cilium/pkg/controller"
+	ipcacheTypes "github.com/cilium/cilium/pkg/ipcache/types"
 	"github.com/cilium/cilium/pkg/k8s"
 	cilium_v2 "github.com/cilium/cilium/pkg/k8s/apis/cilium.io/v2"
 	clientset "github.com/cilium/cilium/pkg/k8s/client/clientset/versioned"
@@ -104,7 +105,8 @@ func (k *K8sWatcher) ciliumNetworkPoliciesInit(ciliumNPClient *k8s.K8sCiliumClie
 					// See https://github.com/cilium/cilium/blob/27fee207f5422c95479422162e9ea0d2f2b6c770/pkg/policy/api/ingress.go#L112-L134
 					cnpCpy := cnp.DeepCopy()
 
-					err := k.addCiliumNetworkPolicyV2(ciliumNPClient, cnpCpy)
+					resource := ipcacheTypes.NewResourceID("cnp", cnp.ObjectMeta.Namespace, cnp.ObjectMeta.Name)
+					err := k.addCiliumNetworkPolicyV2(ciliumNPClient, cnpCpy, resource)
 					k.K8sEventProcessed(metricCNP, metricCreate, err == nil)
 				}
 			},
@@ -129,7 +131,8 @@ func (k *K8sWatcher) ciliumNetworkPoliciesInit(ciliumNPClient *k8s.K8sCiliumClie
 						oldCNPCpy := oldCNP.DeepCopy()
 						newCNPCpy := newCNP.DeepCopy()
 
-						err := k.updateCiliumNetworkPolicyV2(ciliumNPClient, oldCNPCpy, newCNPCpy)
+						resource := ipcacheTypes.NewResourceID("cnp", newCNP.ObjectMeta.Namespace, newCNP.ObjectMeta.Name)
+						err := k.updateCiliumNetworkPolicyV2(ciliumNPClient, oldCNPCpy, newCNPCpy, resource)
 						k.K8sEventProcessed(metricCNP, metricUpdate, err == nil)
 					}
 				}
@@ -142,7 +145,8 @@ func (k *K8sWatcher) ciliumNetworkPoliciesInit(ciliumNPClient *k8s.K8sCiliumClie
 					return
 				}
 				valid = true
-				err := k.deleteCiliumNetworkPolicyV2(cnp)
+				resource := ipcacheTypes.NewResourceID("cnp", cnp.ObjectMeta.Namespace, cnp.ObjectMeta.Name)
+				err := k.deleteCiliumNetworkPolicyV2(cnp, resource)
 				k.K8sEventProcessed(metricCNP, metricDelete, err == nil)
 			},
 		},
@@ -155,7 +159,7 @@ func (k *K8sWatcher) ciliumNetworkPoliciesInit(ciliumNPClient *k8s.K8sCiliumClie
 	k.k8sAPIGroups.AddAPI(k8sAPIGroupCiliumNetworkPolicyV2)
 }
 
-func (k *K8sWatcher) addCiliumNetworkPolicyV2(ciliumNPClient clientset.Interface, cnp *types.SlimCNP) error {
+func (k *K8sWatcher) addCiliumNetworkPolicyV2(ciliumNPClient clientset.Interface, cnp *types.SlimCNP, resource ipcacheTypes.ResourceID) error {
 	scopedLog := log.WithFields(logrus.Fields{
 		logfields.CiliumNetworkPolicyName: cnp.ObjectMeta.Name,
 		logfields.K8sAPIVersion:           cnp.TypeMeta.APIVersion,
@@ -175,6 +179,7 @@ func (k *K8sWatcher) addCiliumNetworkPolicyV2(ciliumNPClient clientset.Interface
 			rev, policyImportErr = k.policyManager.PolicyAdd(rules, &policy.AddOptions{
 				ReplaceWithLabels: cnp.GetIdentityLabels(),
 				Source:            source.CustomResource,
+				Resource:          resource,
 			})
 		}
 	}
@@ -213,7 +218,7 @@ func (k *K8sWatcher) addCiliumNetworkPolicyV2(ciliumNPClient clientset.Interface
 	return policyImportErr
 }
 
-func (k *K8sWatcher) deleteCiliumNetworkPolicyV2(cnp *types.SlimCNP) error {
+func (k *K8sWatcher) deleteCiliumNetworkPolicyV2(cnp *types.SlimCNP, resource ipcacheTypes.ResourceID) error {
 	scopedLog := log.WithFields(logrus.Fields{
 		logfields.CiliumNetworkPolicyName: cnp.ObjectMeta.Name,
 		logfields.K8sAPIVersion:           cnp.TypeMeta.APIVersion,
@@ -230,7 +235,8 @@ func (k *K8sWatcher) deleteCiliumNetworkPolicyV2(cnp *types.SlimCNP) error {
 	}
 
 	_, err = k.policyManager.PolicyDelete(cnp.GetIdentityLabels(), &policy.DeleteOptions{
-		Source: source.CustomResource,
+		Source:   source.CustomResource,
+		Resource: resource,
 	})
 	if err == nil {
 		scopedLog.Info("Deleted CiliumNetworkPolicy")
@@ -241,7 +247,7 @@ func (k *K8sWatcher) deleteCiliumNetworkPolicyV2(cnp *types.SlimCNP) error {
 }
 
 func (k *K8sWatcher) updateCiliumNetworkPolicyV2(ciliumNPClient clientset.Interface,
-	oldRuleCpy, newRuleCpy *types.SlimCNP) error {
+	oldRuleCpy, newRuleCpy *types.SlimCNP, resource ipcacheTypes.ResourceID) error {
 
 	_, err := oldRuleCpy.Parse()
 	if err != nil {
@@ -308,7 +314,7 @@ func (k *K8sWatcher) updateCiliumNetworkPolicyV2(ciliumNPClient clientset.Interf
 		}
 	}
 
-	return k.addCiliumNetworkPolicyV2(ciliumNPClient, newRuleCpy)
+	return k.addCiliumNetworkPolicyV2(ciliumNPClient, newRuleCpy, resource)
 }
 
 func (k *K8sWatcher) updateCiliumNetworkPolicyV2AnnotationsOnly(ciliumNPClient clientset.Interface, cnp *types.SlimCNP) {

@@ -10,6 +10,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 
+	ipcacheTypes "github.com/cilium/cilium/pkg/ipcache/types"
 	"github.com/cilium/cilium/pkg/k8s"
 	"github.com/cilium/cilium/pkg/k8s/informer"
 	slim_networkingv1 "github.com/cilium/cilium/pkg/k8s/slim/k8s/api/networking/v1"
@@ -88,8 +89,9 @@ func (k *K8sWatcher) addK8sNetworkPolicyV1(k8sNP *slim_networkingv1.NetworkPolic
 	scopedLog = scopedLog.WithField(logfields.K8sNetworkPolicyName, k8sNP.ObjectMeta.Name)
 
 	opts := policy.AddOptions{
-		Replace: true,
-		Source:  source.Kubernetes,
+		Replace:  true,
+		Source:   source.Kubernetes,
+		Resource: ipcacheTypes.NewResourceID("netpol", k8sNP.ObjectMeta.Namespace, k8sNP.ObjectMeta.Name),
 	}
 	if _, err := k.policyManager.PolicyAdd(rules, &opts); err != nil {
 		metrics.PolicyImportErrorsTotal.Inc()
@@ -129,7 +131,8 @@ func (k *K8sWatcher) deleteK8sNetworkPolicyV1(k8sNP *slim_networkingv1.NetworkPo
 		logfields.Labels:               logfields.Repr(labels),
 	})
 	if _, err := k.policyManager.PolicyDelete(labels, &policy.DeleteOptions{
-		Source: source.Kubernetes,
+		Source:   source.Kubernetes,
+		Resource: ipcacheTypes.NewResourceID("netpol", k8sNP.ObjectMeta.Namespace, k8sNP.ObjectMeta.Name),
 	}); err != nil {
 		scopedLog.WithError(err).Error("Error while deleting k8s NetworkPolicy")
 		return err
