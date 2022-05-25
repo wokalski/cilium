@@ -564,4 +564,10 @@ const (
 
 	// GatewayIP is the gateway IP used in a given egress policy
 	GatewayIP = "gatewayIP"
+
+	// IPSec SPI
+	SPI = "spi"
+
+	// IPSec old SPI
+	OldSPI = "oldSPI"
 )

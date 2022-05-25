@@ -284,7 +284,7 @@ func ipSecReplacePolicyOut(src, dst, tmplSrc, tmplDst *net.IPNet, dir IPSecDir) 
 }
 
 func ipsecDeleteXfrmStatesNotMatchingSPI(spi uint8) {
-	scopedLog := log.WithField("spi", spi)
+	scopedLog := log.WithField(logfields.SPI, spi)
 
 	xfrmStateList, err := netlink.XfrmStateList(0)
 	if err != nil {
@@ -297,7 +297,7 @@ func ipsecDeleteXfrmStatesNotMatchingSPI(spi uint8) {
 			continue
 		}
 
-		scopedLog := scopedLog.WithField("oldSPI", s.Spi)
+		scopedLog := scopedLog.WithField(logfields.OldSPI, s.Spi)
 
 		scopedLog.Info("Deleting stale XFRM state")
 		if err := netlink.XfrmStateDel(&s); err != nil {
@@ -326,7 +326,7 @@ func ipsecDeleteXfrmState(ip net.IP) {
 }
 
 func ipsecDeleteXfrmPoliciesNotMatchingSPI(spi uint8) {
-	scopedLog := log.WithField("spi", spi)
+	scopedLog := log.WithField(logfields.SPI, spi)
 
 	xfrmPolicyList, err := netlink.XfrmPolicyList(0)
 	if err != nil {
@@ -344,7 +344,7 @@ func ipsecDeleteXfrmPoliciesNotMatchingSPI(spi uint8) {
 			continue
 		}
 
-		scopedLog := scopedLog.WithField("oldSPI", policySPI)
+		scopedLog := scopedLog.WithField(logfields.OldSPI, policySPI)
 
 		scopedLog.Info("Deleting stale XFRM policy")
 		if err := netlink.XfrmPolicyDel(&p); err != nil {
@@ -741,7 +741,8 @@ func doReclaimStaleKeys() {
 
 	xfrmStateList, err := netlink.XfrmStateList(0)
 	if err != nil {
-		log.WithField("spi", ipSecCurrentKeySPI).WithError(err).Warning("Failed to list XFRM states")
+		log.WithField(logfields.SPI, ipSecCurrentKeySPI).
+			WithError(err).Warning("Failed to list XFRM states")
 		return
 	}
 
