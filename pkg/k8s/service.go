@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"net/netip"
 	"net/url"
 	"strings"
 
@@ -281,7 +282,7 @@ type Service struct {
 	// Whenever creating a new service we should make sure that the FrontendIPs are
 	// sorted, so we always generate the same string representation.
 	// +deepequal-gen=false
-	FrontendIPs []net.IP
+	FrontendIPs []netip.Addr
 	IsHeadless  bool
 
 	// IncludeExternal is true when external endpoints from other clusters
