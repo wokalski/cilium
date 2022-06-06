@@ -1077,6 +1077,11 @@ const (
 	// EnableRuntimeDeviceDetection is the name of the option to enable detection
 	// of new and removed datapath devices during the agent runtime.
 	EnableRuntimeDeviceDetection = "enable-runtime-device-detection"
+
+	// K8sAPIServerAddresses is the addresses for Kuberentes API servers. This is used
+	// in Kube-Proxy free mode to connect directly to the API server not relying
+	// on the service.
+	K8sAPIServerAddresses = "k8s-api-server-addresses"
 )
 
 // Default string arguments
@@ -2225,6 +2230,10 @@ type DaemonConfig struct {
 
 	// EnvoySecretNamespace for TLS secrets. Used by CiliumEnvoyConfig via SDS.
 	EnvoySecretNamespace string
+
+	// K8sAPIServerAddresses contains a list of addresses pointing to Kubernetes
+	// API server instances.
+	K8sAPIServerAddresses []string
 }
 
 var (
@@ -3183,6 +3192,9 @@ func (c *DaemonConfig) Populate() {
 
 	// Envoy secrets namespace to watch
 	c.EnvoySecretNamespace = viper.GetString(IngressSecretsNamespace)
+
+	// List of addresses for Kubernetes API server instances.
+	c.K8sAPIServerAddresses = viper.GetStringSlice(K8sAPIServerAddresses)
 }
 
 func (c *DaemonConfig) populateDevices() {
