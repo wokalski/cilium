@@ -234,6 +234,9 @@ func init() {
 	flags.String(option.K8sAPIServer, "", "Kubernetes API server URL")
 	option.BindEnv(option.K8sAPIServer)
 
+	flags.StringSlice(option.K8sAPIServerAddresses, []string{}, "List of addresses for Kubernetes API server instances")
+	option.BindEnv(option.K8sAPIServerAddresses)
+
 	flags.Float32(option.K8sClientQPSLimit, defaults.K8sClientQPSLimit, "Queries per second limit for the K8s client")
 	flags.Int(option.K8sClientBurst, defaults.K8sClientBurst, "Burst value allowed for the K8s client")
 

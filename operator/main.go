@@ -137,8 +137,16 @@ func initEnv() {
 }
 
 func initK8s(k8sInitDone chan struct{}) {
+	var apiServerAddrs []string
+
+	if len(option.Config.K8sAPIServerAddresses) > 0 {
+		apiServerAddrs = option.Config.K8sAPIServerAddresses
+	} else if option.Config.K8sAPIServer != "" {
+		apiServerAddrs = []string{option.Config.K8sAPIServer}
+	}
+
 	k8s.Configure(
-		[]string{option.Config.K8sAPIServer},
+		apiServerAddrs,
 		option.Config.K8sKubeConfigPath,
 		float32(option.Config.K8sClientQPSLimit),
 		option.Config.K8sClientBurst,
