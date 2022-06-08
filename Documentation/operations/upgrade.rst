@@ -336,6 +336,9 @@ New Options
 * ``nodes-gc-interval``: This option was marked as deprecated and has no effect
   in 1.11. Cilium Node Garbage collector is added back in 1.12 (but for k8s GC instead
   of kvstore), so this flag is moved out of deprecated list.
+* ``k8s-api-server-addresses``: This option specifies a list of addresses for Kubernetes
+  API server instances. The client will be configured to connect to one of these servers.
+  A new backend server is selected for client connections if the heartbeat check fails.
 
 Removed Options
 ~~~~~~~~~~~~~~~
@@ -359,6 +362,8 @@ Deprecated Options
 * The ``CiliumEgressNATPolicy`` CRD has been deprecated, and will be removed in
   version 1.13. It is superseded by the ``CiliumEgressGatewayPolicy`` CRD, which
   allows for better selection of the Egress Node, Egress Interface and Masquerade IP.
+* ``k8s-api-server``: This option has been deprecated in favor of ``k8s-api-server-addresses``
+  and will be removed in 1.13.
 
 Helm Options
 ~~~~~~~~~~~~
@@ -384,6 +389,8 @@ Helm Options
 * ``tls.enabled`` has been removed as this attribute is not used at all.
 * Only one CA will be generated with either the helm or CronJob auto method, there will
   be a short disruption while the new CA is propagated to all nodes.
+* ``k8s.apiServerAddresses`` has been introduced to specify multiple Kubernetes API
+  server instances for client configuration.
 
 .. _1.11_upgrade_notes:
 
