@@ -256,6 +256,11 @@ func (ipc *IPCache) InjectLabels(ctx context.Context, modifiedCIDRs []string) (r
 	ipc.mutex.Lock()
 	defer ipc.mutex.Unlock()
 	for ip, id := range entriesToReplace {
+		// TODO: We should be able to store & restore this info from
+		// the prefixInfo structure so that there isn't this weird
+		// split where some ipcache updates come through the metadata
+		// side and merge with other relevant info while other updates
+		// come down directly to the IPCache.Upsert codepath.
 		hIP, key := ipc.getHostIPCache(ip)
 		meta := ipc.getK8sMetadata(ip)
 		if _, err2 := ipc.upsertLocked(

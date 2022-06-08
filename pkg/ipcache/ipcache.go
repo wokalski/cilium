@@ -430,6 +430,11 @@ func (ipc *IPCache) UpsertIdentity(cidr string, hostIP net.IP, id Identity, src 
 	return false, errors.New("not implemented")
 }
 
+func (ipc *IPCache) RemoveIdentity(cidr string, resource types.ResourceID) error {
+	// TODO: Implement
+	return errors.New("not implemented")
+}
+
 // UpsertMetadata upserts a given IP and some corresponding information into
 // the ipcache metadata map. See IPMetadata for a list of types that are valid
 // to pass into this function. This will trigger asynchronous calculation of
