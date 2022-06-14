@@ -47,7 +47,7 @@ Training
 **Training courses**: Our website lists `training courses
 <https://cilium.io/enterprise>`__ that have been
 `approved
-<https://github.com/cilium/cilium.io/blob/main/CONTRIBUTING.md#listing-cilium-training>`_
+<https://github.com/cilium/cilium.io/blob/main/CONTRIBUTING.md#listing-cilium-training>`__
 by the Cilium project. 
 
 Enterprise support
