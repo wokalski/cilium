@@ -54,7 +54,7 @@ Enterprise support
 ==================
 
 **Distributions**: Enterprise-ready, supported and `approved
-<https://github.com/cilium/cilium.io/blob/main/CONTRIBUTING.md#listing-cilium-distributions>`_
+<https://github.com/cilium/cilium.io/blob/main/CONTRIBUTING.md#listing-cilium-distributions>`__
 Cilium distributions are
 listed on the `Cilium website <https://cilium.io/enterprise>`_.
 
